@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,8 +78,26 @@ async def pull_sync_changes(
             "name": c.name,
             "trade_name": c.trade_name,
             "customer_type": c.customer_type,
+            "contact_person": c.contact_person,
             "phone": c.phone,
+            "alternate_phone": c.alternate_phone,
+            "email": c.email,
+            "address": c.address,
+            "billing_address": c.billing_address,
+            "delivery_address": c.delivery_address,
+            "area": c.area,
+            "city": c.city,
+            "district": c.district,
+            "state_code": c.state_code,
+            "postal_code": c.postal_code,
+            "gst_registration_status": c.gst_registration_status,
+            "gst_number": c.gst_number,
+            "credit_enabled": c.credit_enabled,
+            "credit_limit": float(c.credit_limit),
             "current_balance": float(c.current_balance),
+            "payment_terms_days": c.payment_terms_days,
+            "notes": c.notes,
+            "is_active": c.is_active,
         }
         for c in c_res.scalars().all()
     ]
@@ -138,13 +157,62 @@ async def push_outbox(
                     message="Draft delivery created on server"
                 ))
             elif item.entity_type == "CUSTOMER":
+                if user.role != "OWNER":
+                    results.append(SyncPushResult(
+                        operation_id=op_id,
+                        status="REJECTED_CONFLICT",
+                        message="Unauthorized: Only OWNER role can create or synchronize customers"
+                    ))
+                    continue
+
                 payload = item.payload
+                # Check duplicate by phone and name
+                clean_name = payload["name"].strip()
+                clean_phone = payload["phone"].strip()
+                dup_stmt = select(Customer).where(
+                    and_(Customer.name.ilike(clean_name), Customer.phone == clean_phone, Customer.is_active == True)
+                )
+                dup_res = await db.execute(dup_stmt)
+                existing_cust = dup_res.scalar_one_or_none()
+                if existing_cust:
+                    # Idempotently return existing customer server_id
+                    results.append(SyncPushResult(
+                        operation_id=op_id,
+                        status="SUCCESS",
+                        server_id=existing_cust.id,
+                        message="Existing customer record matched and synced"
+                    ))
+                    continue
+
+                credit_enabled = bool(payload.get("credit_enabled", False))
+                credit_limit = Decimal(str(payload.get("credit_limit", 0.0))) if credit_enabled else Decimal("0.00")
+                addr = payload.get("address")
+                deliv_addr = payload.get("delivery_address") or addr
+                bill_addr = payload.get("billing_address") or addr
+
                 cust = Customer(
-                    name=payload["name"],
-                    trade_name=payload.get("trade_name"),
+                    name=clean_name,
+                    trade_name=payload.get("trade_name") or clean_name,
                     customer_type=payload.get("customer_type", "RETAIL_SHOP"),
-                    phone=payload["phone"],
-                    credit_limit=payload.get("credit_limit", 50000.00),
+                    contact_person=payload.get("contact_person"),
+                    phone=clean_phone,
+                    alternate_phone=payload.get("alternate_phone"),
+                    email=payload.get("email"),
+                    address=deliv_addr or bill_addr,
+                    billing_address=bill_addr,
+                    delivery_address=deliv_addr,
+                    area=payload.get("area"),
+                    city=payload.get("city"),
+                    district=payload.get("district"),
+                    state_code=payload.get("state_code"),
+                    postal_code=payload.get("postal_code"),
+                    gst_registration_status=payload.get("gst_registration_status", "UNKNOWN"),
+                    gst_number=payload.get("gst_number"),
+                    credit_enabled=credit_enabled,
+                    credit_limit=credit_limit,
+                    current_balance=Decimal("0.00"),
+                    payment_terms_days=int(payload.get("payment_terms_days", 0)),
+                    notes=payload.get("notes"),
                     is_active=True
                 )
                 db.add(cust)

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.dairyflow.app.CustomerManagementTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-22T10:15:02.399Z" hostname="SAKTHI" time="0.023">
+  <properties/>
+  <testcase name="testDeliveryAddressFallbackLogic" classname="com.dairyflow.app.CustomerManagementTest" time="0.001"/>
+  <testcase name="testCustomerDtoDefaultValues" classname="com.dairyflow.app.CustomerManagementTest" time="0.001"/>
+  <testcase name="testCustomerSearchMatching" classname="com.dairyflow.app.CustomerManagementTest" time="0.019"/>
+  <testcase name="testCreditLimitDisabledDefaultsToZero" classname="com.dairyflow.app.CustomerManagementTest" time="0.0"/>
+  <testcase name="testCustomerCreateRequestModel" classname="com.dairyflow.app.CustomerManagementTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

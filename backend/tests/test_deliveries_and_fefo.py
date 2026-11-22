@@ -126,7 +126,7 @@ async def test_insufficient_stock_rejection():
         
         prods = (await client.get("/api/v1/products")).json()
         ghee = next(p for p in prods if p["sku"] == "GHEE-COW-01")
-        custs = (await client.get("/api/v1/customers")).json()
+        custs = (await client.get("/api/v1/customers", headers=headers)).json()
         
         # Try to deliver 999999 KG of Ghee (far exceeding available stock)
         draft = (await client.post("/api/v1/deliveries", json={

@@ -64,13 +64,20 @@ fun DairyTopBar(
 @Composable
 fun StatusBadge(
     status: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPositive: Boolean? = null,
+    isWarning: Boolean = false
 ) {
-    val (bgColor, textColor) = when (status.uppercase()) {
-        "CONFIRMED", "PAID", "RECEIVED", "ACTIVE" -> GreenContainer to GreenPositive
-        "DRAFT", "PARTIAL" -> AmberContainer to AmberWarning
-        "UNPAID", "CANCELLED", "DEPLETED", "LOW STOCK", "EXPIRED" -> RedContainer to RedCritical
-        else -> SurfaceVariant to TextSecondary
+    val (bgColor, textColor) = when {
+        isPositive == true -> GreenContainer to GreenPositive
+        isPositive == false && isWarning -> AmberContainer to AmberWarning
+        isPositive == false -> RedContainer to RedCritical
+        else -> when (status.uppercase()) {
+            "CONFIRMED", "PAID", "RECEIVED", "ACTIVE" -> GreenContainer to GreenPositive
+            "DRAFT", "PARTIAL" -> AmberContainer to AmberWarning
+            "UNPAID", "CANCELLED", "DEPLETED", "LOW STOCK", "EXPIRED", "INACTIVE" -> RedContainer to RedCritical
+            else -> SurfaceVariant to TextSecondary
+        }
     }
 
     Box(

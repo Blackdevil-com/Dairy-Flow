@@ -20,7 +20,15 @@ sealed class Screen(val route: String) {
     // Owner
     object OwnerDashboard : Screen("owner_dashboard")
     object CustomerList : Screen("customer_list")
-    object NewDelivery : Screen("new_delivery")
+    object CustomerAddEdit : Screen("customer_add_edit?id={id}") {
+        fun createRoute(id: String? = null) = if (id != null) "customer_add_edit?id=$id" else "customer_add_edit"
+    }
+    object CustomerDetails : Screen("customer_details/{id}") {
+        fun createRoute(id: String) = "customer_details/$id"
+    }
+    object NewDelivery : Screen("new_delivery?customerId={customerId}") {
+        fun createRoute(customerId: String? = null) = if (customerId != null) "new_delivery?customerId=$customerId" else "new_delivery"
+    }
     object DeliveryDetails : Screen("delivery_details/{id}") {
         fun createRoute(id: String) = "delivery_details/$id"
     }

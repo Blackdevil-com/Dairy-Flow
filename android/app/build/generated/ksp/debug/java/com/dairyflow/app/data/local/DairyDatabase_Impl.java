@@ -45,15 +45,15 @@ public final class DairyDatabase_Impl extends DairyDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_products` (`id` TEXT NOT NULL, `sku` TEXT NOT NULL, `name` TEXT NOT NULL, `canonicalUnit` TEXT NOT NULL, `defaultSalePrice` REAL NOT NULL, `currentStockBase` REAL NOT NULL, `minStockAlert` REAL NOT NULL, `isLowStock` INTEGER NOT NULL, `lastCachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_batches` (`id` TEXT NOT NULL, `productId` TEXT NOT NULL, `batchNo` TEXT NOT NULL, `availableBaseQty` REAL NOT NULL, `expiryDate` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`id`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `cached_customers` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `tradeName` TEXT, `customerType` TEXT NOT NULL, `phone` TEXT NOT NULL, `currentBalance` REAL NOT NULL, `creditLimit` REAL NOT NULL, `lastCachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `cached_customers` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `tradeName` TEXT, `customerType` TEXT NOT NULL, `contactPerson` TEXT, `phone` TEXT NOT NULL, `alternatePhone` TEXT, `email` TEXT, `address` TEXT, `billingAddress` TEXT, `deliveryAddress` TEXT, `area` TEXT, `city` TEXT, `district` TEXT, `stateCode` TEXT, `postalCode` TEXT, `gstRegistrationStatus` TEXT NOT NULL, `gstNumber` TEXT, `creditEnabled` INTEGER NOT NULL, `creditLimit` REAL NOT NULL, `currentBalance` REAL NOT NULL, `paymentTermsDays` INTEGER NOT NULL, `notes` TEXT, `isActive` INTEGER NOT NULL, `lastCachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `sync_outbox` (`operationId` TEXT NOT NULL, `entityType` TEXT NOT NULL, `action` TEXT NOT NULL, `payloadJson` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`operationId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ccdc1c5f901fa65bc3632bb74fdf5b80')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '367cff0238c44d764597ece3643f5142')");
       }
 
       @Override
@@ -140,14 +140,31 @@ public final class DairyDatabase_Impl extends DairyDatabase {
                   + " Expected:\n" + _infoCachedBatches + "\n"
                   + " Found:\n" + _existingCachedBatches);
         }
-        final HashMap<String, TableInfo.Column> _columnsCachedCustomers = new HashMap<String, TableInfo.Column>(8);
+        final HashMap<String, TableInfo.Column> _columnsCachedCustomers = new HashMap<String, TableInfo.Column>(25);
         _columnsCachedCustomers.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("tradeName", new TableInfo.Column("tradeName", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("customerType", new TableInfo.Column("customerType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("contactPerson", new TableInfo.Column("contactPerson", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("phone", new TableInfo.Column("phone", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsCachedCustomers.put("currentBalance", new TableInfo.Column("currentBalance", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("alternatePhone", new TableInfo.Column("alternatePhone", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("email", new TableInfo.Column("email", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("address", new TableInfo.Column("address", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("billingAddress", new TableInfo.Column("billingAddress", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("deliveryAddress", new TableInfo.Column("deliveryAddress", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("area", new TableInfo.Column("area", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("city", new TableInfo.Column("city", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("district", new TableInfo.Column("district", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("stateCode", new TableInfo.Column("stateCode", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("postalCode", new TableInfo.Column("postalCode", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("gstRegistrationStatus", new TableInfo.Column("gstRegistrationStatus", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("gstNumber", new TableInfo.Column("gstNumber", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("creditEnabled", new TableInfo.Column("creditEnabled", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("creditLimit", new TableInfo.Column("creditLimit", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("currentBalance", new TableInfo.Column("currentBalance", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("paymentTermsDays", new TableInfo.Column("paymentTermsDays", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("notes", new TableInfo.Column("notes", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCustomers.put("isActive", new TableInfo.Column("isActive", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCachedCustomers.put("lastCachedAt", new TableInfo.Column("lastCachedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysCachedCustomers = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesCachedCustomers = new HashSet<TableInfo.Index>(0);
@@ -176,7 +193,7 @@ public final class DairyDatabase_Impl extends DairyDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "ccdc1c5f901fa65bc3632bb74fdf5b80", "56a989b618450f82d1c899768dddad2d");
+    }, "367cff0238c44d764597ece3643f5142", "192601179f946807c26b73342f7a7f0e");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

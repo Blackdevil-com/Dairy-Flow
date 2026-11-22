@@ -170,22 +170,77 @@ data class SupplierDto(
 data class CustomerDto(
     val id: String,
     val name: String,
-    val trade_name: String?,
-    val customer_type: String,
+    val trade_name: String? = null,
+    val customer_type: String = "RETAIL_SHOP",
+    val contact_person: String? = null,
     val phone: String,
-    val address: String?,
-    val credit_limit: Double,
-    val current_balance: Double
+    val alternate_phone: String? = null,
+    val email: String? = null,
+    val address: String? = null,
+    val billing_address: String? = null,
+    val delivery_address: String? = null,
+    val area: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val state_code: String? = null,
+    val postal_code: String? = null,
+    val gst_registration_status: String = "UNKNOWN",
+    val gst_number: String? = null,
+    val credit_enabled: Boolean = false,
+    val credit_limit: Double = 0.0,
+    val current_balance: Double = 0.0,
+    val payment_terms_days: Int = 0,
+    val notes: String? = null,
+    val is_active: Boolean = true
 )
 
 data class CustomerCreateRequest(
     val name: String,
-    val trade_name: String?,
+    val trade_name: String? = null,
     val customer_type: String = "RETAIL_SHOP",
+    val contact_person: String? = null,
     val phone: String,
-    val email: String?,
-    val address: String?,
-    val credit_limit: Double = 50000.0
+    val alternate_phone: String? = null,
+    val email: String? = null,
+    val address: String? = null,
+    val billing_address: String? = null,
+    val delivery_address: String? = null,
+    val area: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val state_code: String? = null,
+    val postal_code: String? = null,
+    val gst_registration_status: String = "UNKNOWN",
+    val gst_number: String? = null,
+    val credit_enabled: Boolean = false,
+    val credit_limit: Double = 0.0,
+    val payment_terms_days: Int = 0,
+    val notes: String? = null
+)
+
+data class CustomerUpdateRequest(
+    val name: String? = null,
+    val trade_name: String? = null,
+    val customer_type: String? = null,
+    val contact_person: String? = null,
+    val phone: String? = null,
+    val alternate_phone: String? = null,
+    val email: String? = null,
+    val address: String? = null,
+    val billing_address: String? = null,
+    val delivery_address: String? = null,
+    val area: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val state_code: String? = null,
+    val postal_code: String? = null,
+    val gst_registration_status: String? = null,
+    val gst_number: String? = null,
+    val credit_enabled: Boolean? = null,
+    val credit_limit: Double? = null,
+    val payment_terms_days: Int? = null,
+    val notes: String? = null,
+    val is_active: Boolean? = null
 )
 
 data class DeliveryItemRequest(
@@ -316,4 +371,30 @@ data class YearlyAnalyticsDto(
     val total_turnover: Double,
     val total_collected: Double,
     val total_outstanding: Double
+)
+
+data class SyncPushItemDto(
+    val operation_id: String,
+    val entity_type: String,
+    val action: String,
+    val payload: Map<String, Any?>,
+    val client_timestamp: String
+)
+
+data class SyncPushRequestDto(
+    val device_id: String,
+    val items: List<SyncPushItemDto>
+)
+
+data class SyncPushResultDto(
+    val operation_id: String,
+    val status: String,
+    val server_id: String? = null,
+    val message: String? = null
+)
+
+data class SyncPushResponseDto(
+    val processed_count: Int,
+    val results: List<SyncPushResultDto>,
+    val server_time: String
 )

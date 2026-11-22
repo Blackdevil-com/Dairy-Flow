@@ -170,16 +170,64 @@ fun NavGraph(
         composable(Screen.CustomerList.route) {
             CustomerManagementScreen(
                 customerRepo = customerRepo,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onNavigateToAddCustomer = { navController.navigate(Screen.CustomerAddEdit.createRoute()) },
+                onNavigateToEditCustomer = { id -> navController.navigate(Screen.CustomerAddEdit.createRoute(id)) },
+                onNavigateToCustomerDetails = { id -> navController.navigate(Screen.CustomerDetails.createRoute(id)) },
+                onNavigateToCreateDelivery = { id -> navController.navigate(Screen.NewDelivery.createRoute(id)) }
             )
         }
 
-        composable(Screen.NewDelivery.route) {
+        composable(
+            route = Screen.CustomerAddEdit.route,
+            arguments = listOf(navArgument("id") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val customerId = backStackEntry.arguments?.getString("id")
+            AddEditCustomerScreen(
+                customerId = customerId,
+                customerRepo = customerRepo,
+                onBack = { navController.popBackStack() },
+                onCustomerSaved = { _ ->
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CustomerDetails.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val customerId = backStackEntry.arguments?.getString("id") ?: ""
+            CustomerDetailsScreen(
+                customerId = customerId,
+                customerRepo = customerRepo,
+                onBack = { navController.popBackStack() },
+                onNavigateToEdit = { id -> navController.navigate(Screen.CustomerAddEdit.createRoute(id)) },
+                onNavigateToCreateDelivery = { id -> navController.navigate(Screen.NewDelivery.createRoute(id)) },
+                onNavigateToRecordPayment = { _ -> navController.navigate(Screen.PaymentRecording.route) }
+            )
+        }
+
+        composable(
+            route = Screen.NewDelivery.route,
+            arguments = listOf(navArgument("customerId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val custId = backStackEntry.arguments?.getString("customerId")
             NewDeliveryScreen(
+                initialCustomerId = custId,
                 deliveryRepo = deliveryRepo,
                 customerRepo = customerRepo,
                 inventoryRepo = inventoryRepo,
                 onBack = { navController.popBackStack() },
+                onNavigateToAddCustomer = { navController.navigate(Screen.CustomerAddEdit.createRoute()) },
                 onDeliveryCreated = { delivId ->
                     navController.navigate(Screen.DeliveryDetails.createRoute(delivId)) {
                         popUpTo(Screen.NewDelivery.route) { inclusive = true }
