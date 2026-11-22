@@ -1,3 +1,4 @@
+from sqlalchemy import text
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -67,3 +68,16 @@ async def health_check():
         "version": settings.VERSION,
         "gst_mode": settings.GST_STATUS
     }
+
+
+@app.get("/health/db")
+async def database_health():
+    try:
+        async with engine.connect() as connection:
+            await connection.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection failed"
+        )
