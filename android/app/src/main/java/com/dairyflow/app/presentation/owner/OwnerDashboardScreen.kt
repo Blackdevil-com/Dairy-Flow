@@ -1,9 +1,11 @@
 package com.dairyflow.app.presentation.owner
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,10 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dairyflow.app.core.components.DairyBottomNavigation
 import com.dairyflow.app.core.components.DairyTopBar
 import com.dairyflow.app.core.components.MetricCard
 import com.dairyflow.app.core.components.StatusBadge
@@ -23,7 +28,6 @@ import com.dairyflow.app.data.remote.dto.DailyAnalyticsDto
 import com.dairyflow.app.data.remote.dto.DeliveryDto
 import com.dairyflow.app.data.remote.dto.StockSummaryDto
 import com.dairyflow.app.data.repository.*
-import com.dairyflow.app.presentation.inventory.ActionTile
 import kotlinx.coroutines.launch
 
 @Composable
@@ -68,8 +72,8 @@ fun OwnerDashboardScreen(
     Scaffold(
         topBar = {
             DairyTopBar(
-                title = "DairyFlow Owner Portal",
-                subtitle = "Distribution, Invoicing & Receivables",
+                title = "DairyFlow Owner",
+                subtitle = "Warehouse & Commercial Hub",
                 actions = {
                     IconButton(onClick = onNavigateToSync) {
                         Icon(Icons.Default.Sync, contentDescription = "Sync", tint = Color.White)
@@ -80,20 +84,35 @@ fun OwnerDashboardScreen(
                 }
             )
         },
+        bottomBar = {
+            DairyBottomNavigation(
+                selectedTab = "HOME",
+                onTabSelected = { tab ->
+                    when (tab) {
+                        "HOME" -> { /* Already here */ }
+                        "DELIVERIES" -> onNavigateToNewDelivery()
+                        "CUSTOMERS" -> onNavigateToCustomers()
+                        "MORE" -> onNavigateToProfile()
+                    }
+                },
+                isOwner = true
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onNavigateToNewDelivery,
-                containerColor = DeepTeal,
+                containerColor = DairyPrimary,
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.LocalShipping, contentDescription = null) },
-                text = { Text("New Delivery", fontWeight = FontWeight.Bold) }
+                text = { Text("New Delivery", fontWeight = FontWeight.Bold) },
+                shape = RoundedCornerShape(16.dp)
             )
         }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OffWhiteBackground)
+                .background(DairyBackground)
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -109,27 +128,30 @@ fun OwnerDashboardScreen(
                         value = "₹ %.2f".format(dailySummary?.total_sales_amount ?: 0.0),
                         subtitle = "${dailySummary?.deliveries_count ?: 0} deliveries today",
                         icon = Icons.Default.CurrencyRupee,
-                        iconColor = DeepTeal,
+                        iconColor = DairyPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
                         title = "Collections",
                         value = "₹ %.2f".format(dailySummary?.total_collections_amount ?: 0.0),
-                        subtitle = "UPI: ₹%.0f | Cash: ₹%.0f".format(dailySummary?.upi_collections ?: 0.0, dailySummary?.cash_collections ?: 0.0),
+                        subtitle = "UPI: ₹%.0f | Cash: ₹%.0f".format(
+                            dailySummary?.upi_collections ?: 0.0,
+                            dailySummary?.cash_collections ?: 0.0
+                        ),
                         icon = Icons.Default.Payments,
-                        iconColor = GreenPositive,
+                        iconColor = DairySuccess,
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
 
-            // Quick Actions
+            // Quick Actions / Commercial Hub
             item {
                 Text(
                     text = "Commercial Management",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = DairyTextPrimary
                 )
             }
 
@@ -138,19 +160,19 @@ fun OwnerDashboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ActionTile(
-                        title = "Customers Directory",
-                        subtitle = "Retail & individual balances",
-                        icon = Icons.Default.People,
-                        color = DeepTeal,
+                    ModernActionTile(
+                        title = "Customer Accounts",
+                        subtitle = "Retail & Individual directory",
+                        icon = Icons.Default.Storefront,
+                        color = DairyPrimary,
                         onClick = onNavigateToCustomers,
                         modifier = Modifier.weight(1f)
                     )
-                    ActionTile(
+                    ModernActionTile(
                         title = "Receive Payment",
                         subtitle = "Cash, UPI & Bank transfer",
                         icon = Icons.Default.Payment,
-                        color = GreenPositive,
+                        color = DairySuccess,
                         onClick = onNavigateToPayments,
                         modifier = Modifier.weight(1f)
                     )
@@ -162,19 +184,19 @@ fun OwnerDashboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ActionTile(
+                    ModernActionTile(
                         title = "Invoices & PDFs",
-                        subtitle = "Download demo-watermarked bills",
+                        subtitle = "Download demo bills",
                         icon = Icons.Default.Receipt,
-                        color = AmberWarning,
+                        color = DairyWarning,
                         onClick = onNavigateToInvoices,
                         modifier = Modifier.weight(1f)
                     )
-                    ActionTile(
+                    ModernActionTile(
                         title = "Outstanding Ledger",
                         subtitle = "Accounts receivable & aging",
                         icon = Icons.Default.AccountBalanceWallet,
-                        color = RedCritical,
+                        color = DairyCritical,
                         onClick = onNavigateToOutstanding,
                         modifier = Modifier.weight(1f)
                     )
@@ -182,11 +204,11 @@ fun OwnerDashboardScreen(
             }
 
             item {
-                ActionTile(
-                    title = "Monthly & Yearly Analytics",
-                    subtitle = "Turnover, financial year reports, product breakdown",
+                ModernActionTile(
+                    title = "Turnover & Analytics",
+                    subtitle = "Monthly & annual sales turnover breakdown",
                     icon = Icons.Default.BarChart,
-                    color = TealLight,
+                    color = DairyBlue,
                     onClick = onNavigateToAnalytics,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -203,10 +225,10 @@ fun OwnerDashboardScreen(
                         text = "Warehouse Stock Available",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = DairyTextPrimary
                     )
                     IconButton(onClick = { load() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = DeepTeal)
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = DairyPrimary)
                     }
                 }
             }
@@ -215,9 +237,10 @@ fun OwnerDashboardScreen(
                 val s = stockList[idx]
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                    elevation = CardDefaults.cardElevation(1.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = DairySurface),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(DairyBorder)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -227,15 +250,21 @@ fun OwnerDashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(s.product_name, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text("SKU: ${s.product_sku}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                            Text(s.product_name, fontWeight = FontWeight.Bold, color = DairyTextPrimary)
+                            Text("SKU: ${s.product_sku}", style = MaterialTheme.typography.bodySmall, color = DairyTextMuted)
                         }
-                        Text(
-                            text = "%.2f %s".format(s.available_stock, s.canonical_unit),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = DeepTeal
-                        )
+                        Box(
+                            modifier = Modifier
+                                .background(DairyPrimaryLight, RoundedCornerShape(10.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "%.2f %s".format(s.available_stock, s.canonical_unit),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = DairyPrimary
+                            )
+                        }
                     }
                 }
             }
@@ -246,7 +275,7 @@ fun OwnerDashboardScreen(
                     text = "Recent Deliveries & Dispatches",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = DairyTextPrimary
                 )
             }
 
@@ -256,9 +285,10 @@ fun OwnerDashboardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onNavigateToDeliveryDetails(d.id) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                    elevation = CardDefaults.cardElevation(1.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = DairySurface),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(DairyBorder)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -268,19 +298,75 @@ fun OwnerDashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(d.customer_name ?: "Customer", fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text("Deliv No: ${d.delivery_no} | Date: ${d.delivery_date}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                            Text(d.customer_name ?: "Customer", fontWeight = FontWeight.Bold, color = DairyTextPrimary)
+                            Text("Deliv: ${d.delivery_no} • ${d.delivery_date}", style = MaterialTheme.typography.bodySmall, color = DairyTextMuted)
                             if (d.invoice_no != null) {
-                                Text("Invoice: ${d.invoice_no}", style = MaterialTheme.typography.labelSmall, color = DeepTeal, fontWeight = FontWeight.SemiBold)
+                                Text("Inv: ${d.invoice_no}", style = MaterialTheme.typography.labelSmall, color = DairyPrimary, fontWeight = FontWeight.SemiBold)
                             }
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("₹ %.2f".format(d.net_amount), fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("₹ %.2f".format(d.net_amount), fontWeight = FontWeight.Bold, color = DairyTextPrimary)
                             StatusBadge(status = d.status)
                         }
                     }
                 }
             }
+
+            item {
+                Spacer(modifier = Modifier.height(60.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun ModernActionTile(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = DairySurface),
+        border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(DairyBorder)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = DairyTextPrimary
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = DairyTextMuted,
+                maxLines = 2
+            )
         }
     }
 }

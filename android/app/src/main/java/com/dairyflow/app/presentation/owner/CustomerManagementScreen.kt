@@ -1,9 +1,13 @@
 package com.dairyflow.app.presentation.owner
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,10 +15,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dairyflow.app.core.components.DairyBottomNavigation
+import com.dairyflow.app.core.components.DairySearchBar
 import com.dairyflow.app.core.components.DairyTopBar
 import com.dairyflow.app.core.components.EmptyState
 import com.dairyflow.app.core.components.StatusBadge
@@ -86,227 +93,226 @@ fun CustomerManagementScreen(
                 }
             )
         },
+        bottomBar = {
+            DairyBottomNavigation(
+                selectedTab = "CUSTOMERS",
+                onTabSelected = { tab ->
+                    when (tab) {
+                        "HOME" -> onBack()
+                        "DELIVERIES" -> onNavigateToCreateDelivery("")
+                        "CUSTOMERS" -> { /* Already here */ }
+                        "MORE" -> onBack()
+                    }
+                },
+                isOwner = true
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onNavigateToAddCustomer,
-                containerColor = DeepTeal,
+                containerColor = DairyPrimary,
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Add Customer", fontWeight = FontWeight.Bold) }
+                text = { Text("Add Customer", fontWeight = FontWeight.Bold) },
+                shape = RoundedCornerShape(16.dp)
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OffWhiteBackground)
+                .background(DairyBackground)
                 .padding(padding)
         ) {
-            // Search & Count Bar
+            // Search & Filters Header Surface
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = SurfaceWhite,
+                color = DairySurface,
                 shadowElevation = 2.dp
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Customer Accounts (${customers.size})",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-
-                        TextButton(onClick = { load() }) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = DeepTeal, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Refresh", color = DeepTeal)
-                        }
-                    }
-
-                    // Search TextField
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Search shop, name, phone, or location...") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextMuted) },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = TextMuted)
-                                }
-                            }
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                    DairySearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        placeholder = "Search shop, customer name, mobile, area..."
                     )
 
-                    // Filter Chips Scrollable Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf(
-                            "ALL" to "All",
-                            "RETAIL_SHOP" to "Retail Shops",
-                            "INDIVIDUAL" to "Individuals",
-                            "ACTIVE" to "Active",
-                            "INACTIVE" to "Inactive"
-                        ).forEach { (filterKey, label) ->
+                    // Filter Chips
+                    val filters = listOf(
+                        "ALL" to "All (${customers.size})",
+                        "RETAIL_SHOP" to "Retail Shops",
+                        "INDIVIDUAL" to "Individuals",
+                        "ACTIVE" to "Active Only",
+                        "INACTIVE" to "Inactive"
+                    )
+
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(filters) { (key, label) ->
                             FilterChip(
-                                selected = selectedFilter == filterKey,
-                                onClick = { selectedFilter = filterKey },
-                                label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                                selected = selectedFilter == key,
+                                onClick = { selectedFilter = key },
+                                label = { Text(label, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = DairyPrimary,
+                                    selectedLabelColor = Color.White,
+                                    containerColor = DairySurfaceVariant,
+                                    labelColor = DairyTextSecondary
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = if (selectedFilter == key) DairyPrimary else DairyBorder,
+                                    enabled = true,
+                                    selected = selectedFilter == key
+                                )
                             )
                         }
                     }
                 }
             }
 
-            // Customer List / Empty State / Loading State
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = DeepTeal)
+                    CircularProgressIndicator(color = DairyPrimary)
                 }
             } else if (customers.isEmpty()) {
-                if (searchQuery.isNotBlank()) {
-                    EmptyState(
-                        icon = Icons.Default.SearchOff,
-                        title = "No Customers Found",
-                        description = "No customer accounts match '$searchQuery'. Try adjusting your search query or filters.",
-                        actionText = "Clear Search",
-                        onAction = { searchQuery = "" },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    EmptyState(
-                        icon = Icons.Default.Storefront,
-                        title = "No Customers Registered",
-                        description = "Register retail shops and individual buyers once. They will appear here and can be selected for future delivery runs.",
-                        actionText = "Register Retail Shop",
-                        onAction = onNavigateToAddCustomer,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                EmptyState(
+                    icon = Icons.Default.Storefront,
+                    title = "No Customers Found",
+                    description = if (searchQuery.isNotBlank()) "No records matching '$searchQuery'." else "Get started by registering your first retail shop or customer.",
+                    actionText = "+ Register Customer",
+                    onAction = onNavigateToAddCustomer,
+                    modifier = Modifier.fillMaxSize()
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(customers.size) { idx ->
-                        val c = customers[idx]
-                        val hasBalance = c.current_balance > 0
-
+                    items(customers) { c ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
                                 .clickable { onNavigateToCustomerDetails(c.id) },
-                            shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(containerColor = DairySurface),
+                            border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(DairyBorder)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.Top
                                 ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = c.trade_name ?: c.name,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextPrimary
-                                        )
-                                        if (!c.trade_name.isNullOrBlank() && c.trade_name != c.name) {
-                                            Text(
-                                                text = c.name,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = TextMuted
-                                            )
+                                    Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(42.dp)
+                                                .clip(CircleShape)
+                                                .background(DairyPrimaryLight),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Default.Store, contentDescription = null, tint = DairyPrimary, modifier = Modifier.size(22.dp))
                                         }
-                                        if (!c.contact_person.isNullOrBlank()) {
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
                                             Text(
-                                                text = "Contact: ${c.contact_person}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = TextSecondary
+                                                text = c.trade_name ?: c.name,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = DairyTextPrimary
                                             )
-                                        }
-                                        Text(
-                                            text = "${c.customer_type.replace('_', ' ')} • Ph: ${c.phone}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = TextMuted
-                                        )
-                                        if (!c.area.isNullOrBlank() || !c.city.isNullOrBlank()) {
-                                            Text(
-                                                text = "Locality: ${listOfNotNull(c.area, c.city).joinToString(", ")}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = TextSecondary
-                                            )
+                                            if (c.trade_name != null && c.name != c.trade_name) {
+                                                Text(
+                                                    text = "Prop: ${c.name}",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = DairyTextSecondary
+                                                )
+                                            }
                                         }
                                     }
 
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
-                                            text = "Outstanding:",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = TextMuted
-                                        )
-                                        Text(
                                             text = "₹ %.2f".format(c.current_balance),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (hasBalance) RedCritical else GreenPositive
+                                            color = if (c.current_balance > 0) DairyCritical else DairySuccess
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        StatusBadge(
-                                            status = if (c.credit_enabled) "CREDIT ON" else "CASH ONLY",
-                                            isPositive = c.credit_enabled
+                                        Text(
+                                            text = if (c.current_balance > 0) "Receivable" else "Cleared",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = DairyTextMuted
                                         )
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(10.dp))
-                                HorizontalDivider(color = OutlineVariant)
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // Action Buttons
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    TextButton(
-                                        onClick = { onNavigateToCreateDelivery(c.id) },
-                                        contentPadding = PaddingValues(0.dp)
-                                    ) {
-                                        Icon(Icons.Default.LocalShipping, contentDescription = null, tint = DeepTeal, modifier = Modifier.size(16.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Phone, contentDescription = null, tint = DairyTextMuted, modifier = Modifier.size(15.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Create Delivery", color = DeepTeal, fontWeight = FontWeight.SemiBold)
+                                        Text(
+                                            text = "${c.contact_person ?: "Contact"} • ${c.phone}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = DairyTextSecondary
+                                        )
                                     }
 
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        IconButton(onClick = { onNavigateToEditCustomer(c.id) }) {
-                                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = TextMuted, modifier = Modifier.size(20.dp))
+                                    if (!c.area.isNullOrBlank() || !c.city.isNullOrBlank()) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = DairyTextMuted, modifier = Modifier.size(15.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = listOfNotNull(c.area, c.city).joinToString(", "),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = DairyTextSecondary
+                                            )
                                         }
-                                        IconButton(onClick = { onNavigateToCustomerDetails(c.id) }) {
-                                            Icon(Icons.Default.ChevronRight, contentDescription = "View Details", tint = TextMuted, modifier = Modifier.size(20.dp))
+                                    }
+                                }
+
+                                HorizontalDivider(color = DairyBorder)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        StatusBadge(status = c.customer_type)
+                                        if (!c.is_active) {
+                                            StatusBadge(status = "INACTIVE")
+                                        }
+                                    }
+
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        OutlinedButton(
+                                            onClick = { onNavigateToCreateDelivery(c.id) },
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = DairyPrimary),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, DairyPrimary),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Icon(Icons.Default.LocalShipping, contentDescription = null, modifier = Modifier.size(15.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("New Delivery", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
+
+                                        IconButton(onClick = { onNavigateToEditCustomer(c.id) }) {
+                                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = DairyTextMuted)
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(72.dp))
                     }
                 }
             }

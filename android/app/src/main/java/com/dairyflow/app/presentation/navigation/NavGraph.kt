@@ -191,7 +191,8 @@ fun NavGraph(
                 customerId = customerId,
                 customerRepo = customerRepo,
                 onBack = { navController.popBackStack() },
-                onCustomerSaved = { _ ->
+                onCustomerSaved = { savedId ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set("new_customer_id", savedId)
                     navController.popBackStack()
                 }
             )
@@ -223,6 +224,7 @@ fun NavGraph(
             val custId = backStackEntry.arguments?.getString("customerId")
             NewDeliveryScreen(
                 initialCustomerId = custId,
+                navController = navController,
                 deliveryRepo = deliveryRepo,
                 customerRepo = customerRepo,
                 inventoryRepo = inventoryRepo,

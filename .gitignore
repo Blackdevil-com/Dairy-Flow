@@ -1,0 +1,46 @@
+# Gradle & Android
+.gradle/
+build/
+*/build/
+app/build/
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+local.properties
+.cxx/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+*.egg-info/
+dist/
+eggs/
+.eggs/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+backend/dairyflow.db
+dairyflow.db
+
+# IDE & Editor
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Invoices and temp files
+backend/static/invoices/*.pdf
+static/invoices/*.pdf

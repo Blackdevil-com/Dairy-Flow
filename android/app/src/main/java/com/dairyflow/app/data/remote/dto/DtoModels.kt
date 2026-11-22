@@ -253,6 +253,7 @@ data class DeliveryItemRequest(
 data class DeliveryCreateRequest(
     val customer_id: String,
     val discount: Double = 0.0,
+    val delivery_address: String? = null,
     val notes: String?,
     val idempotency_key: String?,
     val items: List<DeliveryItemRequest>
@@ -282,6 +283,7 @@ data class DeliveryDto(
     val tax_amount: Double,
     val discount: Double,
     val net_amount: Double,
+    val delivery_address: String? = null,
     val notes: String?,
     val invoice_id: String?,
     val invoice_no: String?,

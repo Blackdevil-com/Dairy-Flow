@@ -13,6 +13,7 @@ class DeliveryCreate(BaseModel):
     customer_id: str
     warehouse_id: Optional[str] = None
     delivery_date: Optional[date] = None
+    delivery_address: Optional[str] = None
     discount: Decimal = Decimal("0.00")
     notes: Optional[str] = None
     idempotency_key: Optional[str] = None
@@ -47,6 +48,7 @@ class DeliveryResponse(BaseModel):
     tax_amount: Decimal
     discount: Decimal
     net_amount: Decimal
+    delivery_address: Optional[str] = None
     notes: Optional[str] = None
     idempotency_key: Optional[str] = None
     created_by: str
