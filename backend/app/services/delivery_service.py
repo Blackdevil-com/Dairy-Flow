@@ -24,6 +24,7 @@ async def create_delivery_draft(
     items_data: List[Dict[str, Any]],
     created_by: str,
     delivery_date: Optional[date] = None,
+    delivery_address: Optional[str] = None,
     discount: Decimal = Decimal("0.00"),
     notes: Optional[str] = None,
     idempotency_key: Optional[str] = None
@@ -40,12 +41,16 @@ async def create_delivery_draft(
         
     delivery_no = f"DEL-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4].upper()}"
     
+    # Snapshot delivery address from parameter or customer defaults
+    resolved_address = delivery_address or customer.delivery_address or customer.address
+
     delivery = Delivery(
         delivery_no=delivery_no,
         customer_id=customer_id,
         warehouse_id=warehouse_id,
         status="DRAFT",
         delivery_date=delivery_date or date.today(),
+        delivery_address=resolved_address,
         discount=discount,
         notes=notes,
         idempotency_key=idempotency_key,

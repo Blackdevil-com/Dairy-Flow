@@ -40,7 +40,7 @@ async def test_sync_pull_and_push_idempotent():
         push_res = await client.post("/api/v1/sync/push", json=push_payload, headers=headers)
         assert push_res.status_code == 200
         results = push_res.json()["results"]
-        assert results[0]["status"] == "SUCCESS"
+        assert results[0]["status"] == "SUCCESS", results[0]["message"]
         
         # Duplicate Push of same operation_id should be ignored idempotently
         push_dup_res = await client.post("/api/v1/sync/push", json=push_payload, headers=headers)

@@ -39,11 +39,11 @@ fun IncomingStockScreen(
     var suppliers by remember { mutableStateOf<List<SupplierDto>>(emptyList()) }
     var selectedSupplier by remember { mutableStateOf<SupplierDto?>(null) }
     
-    var quantityStr by remember { mutableStateOf("10.0") }
+    var quantityStr by remember { mutableStateOf("") }
     var unitCode by remember { mutableStateOf("CRT") }
     var batchNo by remember { mutableStateOf("BATCH-${SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())}-01") }
-    var unitCostStr by remember { mutableStateOf("45.00") }
-    var invoiceRef by remember { mutableStateOf("PO-${SimpleDateFormat("MMdd", Locale.getDefault()).format(Date())}-001") }
+    var unitCostStr by remember { mutableStateOf("") }
+    var invoiceRef by remember { mutableStateOf("") }
     
     var isSubmitting by remember { mutableStateOf(false) }
     var isLoadingInit by remember { mutableStateOf(true) }

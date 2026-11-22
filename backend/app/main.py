@@ -10,6 +10,7 @@ from app.api.v1.api import api_router
 from app.db.base import Base
 from app.db.session import engine, AsyncSessionLocal
 from app.db.seed import seed_initial_data
+from app.db.migrate_schema import apply_customer_schema_updates
 
 setup_logging()
 
@@ -21,6 +22,9 @@ async def lifespan(app: FastAPI):
     # Initialize DB schema
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Ensure schema migrations for existing databases
+    await apply_customer_schema_updates(engine)
         
     # Seed initial users, warehouse, units, and products
     async with AsyncSessionLocal() as session:

@@ -175,21 +175,49 @@ class CustomerRepository(context: Context) {
 
     val cachedCustomers: Flow<List<CustomerEntity>> = customerDao.getAllCustomers()
 
-    suspend fun refreshCustomers(query: String? = null): Result<List<CustomerDto>> = withContext(Dispatchers.IO) {
+    private fun dtoToEntity(c: CustomerDto): CustomerEntity {
+        return CustomerEntity(
+            id = c.id,
+            name = c.name,
+            tradeName = c.trade_name,
+            customerType = c.customer_type,
+            contactPerson = c.contact_person,
+            phone = c.phone,
+            alternatePhone = c.alternate_phone,
+            email = c.email,
+            address = c.address,
+            billingAddress = c.billing_address,
+            deliveryAddress = c.delivery_address,
+            area = c.area,
+            city = c.city,
+            district = c.district,
+            stateCode = c.state_code,
+            postalCode = c.postal_code,
+            gstRegistrationStatus = c.gst_registration_status,
+            gstNumber = c.gst_number,
+            creditEnabled = c.credit_enabled,
+            creditLimit = c.credit_limit,
+            currentBalance = c.current_balance,
+            paymentTermsDays = c.payment_terms_days,
+            notes = c.notes,
+            isActive = c.is_active,
+            lastCachedAt = System.currentTimeMillis()
+        )
+    }
+
+    suspend fun refreshCustomers(
+        query: String? = null,
+        customerType: String? = null,
+        isActive: Boolean? = true
+    ): Result<List<CustomerDto>> = withContext(Dispatchers.IO) {
         try {
-            val customers = ApiClient.apiService.getCustomers(query)
-            val entities = customers.map { c ->
-                CustomerEntity(
-                    id = c.id,
-                    name = c.name,
-                    tradeName = c.trade_name,
-                    customerType = c.customer_type,
-                    phone = c.phone,
-                    currentBalance = c.current_balance,
-                    creditLimit = c.credit_limit
-                )
-            }
-            customerDao.clearCustomers()
+            val customers = ApiClient.apiService.getCustomers(
+                query = query,
+                customerType = customerType,
+                isActive = isActive
+            )
+            val entities = customers.map { dtoToEntity(it) }
+            // Safe upsert without deleting full cache on filtered search
             customerDao.insertCustomers(entities)
             Result.success(customers)
         } catch (e: Exception) {
@@ -197,11 +225,74 @@ class CustomerRepository(context: Context) {
         }
     }
 
+    suspend fun getCustomerById(id: String): Result<CustomerDto> = withContext(Dispatchers.IO) {
+        try {
+            val customer = ApiClient.apiService.getCustomerById(id)
+            customerDao.insertCustomer(dtoToEntity(customer))
+            Result.success(customer)
+        } catch (e: Exception) {
+            // Check local cache if network fails
+            val cached = customerDao.getCustomerById(id)
+            if (cached != null) {
+                Result.success(
+                    CustomerDto(
+                        id = cached.id,
+                        name = cached.name,
+                        trade_name = cached.tradeName,
+                        customer_type = cached.customerType,
+                        contact_person = cached.contactPerson,
+                        phone = cached.phone,
+                        alternate_phone = cached.alternatePhone,
+                        email = cached.email,
+                        address = cached.address,
+                        billing_address = cached.billingAddress,
+                        delivery_address = cached.deliveryAddress,
+                        area = cached.area,
+                        city = cached.city,
+                        district = cached.district,
+                        state_code = cached.stateCode,
+                        postal_code = cached.postalCode,
+                        gst_registration_status = cached.gstRegistrationStatus,
+                        gst_number = cached.gstNumber,
+                        credit_enabled = cached.creditEnabled,
+                        credit_limit = cached.creditLimit,
+                        current_balance = cached.currentBalance,
+                        payment_terms_days = cached.paymentTermsDays,
+                        notes = cached.notes,
+                        is_active = cached.isActive
+                    )
+                )
+            } else {
+                Result.failure(e)
+            }
+        }
+    }
+
     suspend fun createCustomer(req: CustomerCreateRequest): Result<CustomerDto> = withContext(Dispatchers.IO) {
         try {
             val cust = ApiClient.apiService.createCustomer(req)
-            refreshCustomers()
+            customerDao.insertCustomer(dtoToEntity(cust))
             Result.success(cust)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateCustomer(id: String, req: CustomerUpdateRequest): Result<CustomerDto> = withContext(Dispatchers.IO) {
+        try {
+            val cust = ApiClient.apiService.updateCustomer(id, req)
+            customerDao.insertCustomer(dtoToEntity(cust))
+            Result.success(cust)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deactivateCustomer(id: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            ApiClient.apiService.deactivateCustomer(id)
+            customerDao.deactivateCustomer(id)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

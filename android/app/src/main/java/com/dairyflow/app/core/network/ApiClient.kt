@@ -7,8 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // Backend IP configured for local network development
-    var baseUrl: String = "http://192.168.31.171:8080/api/v1/"
+    // Live FastAPI backend running on InstaBox
+    var baseUrl: String = "https://8000-agq4koneddixlzic6unzt47b4q.instabox.tech/api/v1/"
         set(value) {
             field = if (value.endsWith("/")) value else "$value/"
             retrofitInstance = null

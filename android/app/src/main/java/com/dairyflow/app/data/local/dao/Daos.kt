@@ -33,11 +33,20 @@ interface BatchDao {
 
 @Dao
 interface CustomerDao {
-    @Query("SELECT * FROM cached_customers ORDER BY name ASC")
+    @Query("SELECT * FROM cached_customers WHERE isActive = 1 ORDER BY name ASC")
     fun getAllCustomers(): Flow<List<CustomerEntity>>
+
+    @Query("SELECT * FROM cached_customers WHERE id = :id LIMIT 1")
+    suspend fun getCustomerById(id: String): CustomerEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCustomers(customers: List<CustomerEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCustomer(customer: CustomerEntity)
+
+    @Query("UPDATE cached_customers SET isActive = 0 WHERE id = :id")
+    suspend fun deactivateCustomer(id: String)
 
     @Query("DELETE FROM cached_customers")
     suspend fun clearCustomers()

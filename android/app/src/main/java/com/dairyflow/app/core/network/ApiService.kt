@@ -51,10 +51,26 @@ interface ApiService {
 
     // Customers & Suppliers
     @GET("customers")
-    suspend fun getCustomers(@Query("query") query: String? = null): List<CustomerDto>
+    suspend fun getCustomers(
+        @Query("query") query: String? = null,
+        @Query("customer_type") customerType: String? = null,
+        @Query("is_active") isActive: Boolean? = true
+    ): List<CustomerDto>
+
+    @GET("customers/{id}")
+    suspend fun getCustomerById(@Path("id") id: String): CustomerDto
 
     @POST("customers")
     suspend fun createCustomer(@Body body: CustomerCreateRequest): CustomerDto
+
+    @PUT("customers/{id}")
+    suspend fun updateCustomer(
+        @Path("id") id: String,
+        @Body body: CustomerUpdateRequest
+    ): CustomerDto
+
+    @DELETE("customers/{id}")
+    suspend fun deactivateCustomer(@Path("id") id: String): Map<String, Any>
 
     @GET("customers/suppliers/list")
     suspend fun getSuppliers(): List<SupplierDto>
@@ -103,4 +119,7 @@ interface ApiService {
     // Sync
     @GET("sync/changes")
     suspend fun pullSyncChanges(@Query("device_id") deviceId: String): Map<String, Any>
+
+    @POST("sync/push")
+    suspend fun pushSync(@Body body: SyncPushRequestDto): SyncPushResponseDto
 }

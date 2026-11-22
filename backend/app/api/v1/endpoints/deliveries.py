@@ -79,6 +79,7 @@ async def list_deliveries(
             tax_amount=d.tax_amount,
             discount=d.discount,
             net_amount=d.net_amount,
+            delivery_address=d.delivery_address,
             notes=d.notes,
             idempotency_key=d.idempotency_key,
             created_by=d.created_by,
@@ -118,6 +119,7 @@ async def create_delivery(
         created_by=user.id,
         delivery_date=deliv_in.delivery_date,
         discount=deliv_in.discount,
+        delivery_address=deliv_in.delivery_address,
         notes=deliv_in.notes,
         idempotency_key=deliv_in.idempotency_key
     )
@@ -159,6 +161,7 @@ async def create_delivery(
         tax_amount=delivery.tax_amount,
         discount=delivery.discount,
         net_amount=delivery.net_amount,
+        delivery_address=delivery.delivery_address,
         notes=delivery.notes,
         idempotency_key=delivery.idempotency_key,
         created_by=delivery.created_by,
@@ -226,6 +229,7 @@ async def confirm_delivery(
         tax_amount=delivery.tax_amount,
         discount=delivery.discount,
         net_amount=delivery.net_amount,
+        delivery_address=delivery.delivery_address,
         notes=delivery.notes,
         idempotency_key=delivery.idempotency_key,
         created_by=delivery.created_by,
