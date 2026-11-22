@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.dairyflow.app.UnitConversionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-22T09:30:11.532Z" hostname="SAKTHI" time="0.005">
+  <properties/>
+  <testcase name="testCowMilkCrateConversion" classname="com.dairyflow.app.UnitConversionTest" time="0.002"/>
+  <testcase name="testCurdTubConversion" classname="com.dairyflow.app.UnitConversionTest" time="0.0"/>
+  <testcase name="testFifoPaymentAllocationCalculation" classname="com.dairyflow.app.UnitConversionTest" time="0.0"/>
+  <testcase name="testPaneerCrateConversion" classname="com.dairyflow.app.UnitConversionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
